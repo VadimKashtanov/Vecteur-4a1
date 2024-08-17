@@ -15,13 +15,22 @@ BTCUSDT_t * cree_btcusdt(char * fichier) {
 	FREAD(&ret->L,  sizeof(uint), 1, fp);
 	FREAD(&ret->N,  sizeof(uint), 1, fp);
 
+	uint I=ret->I;
+	uint T=ret->T;
+	uint L=ret->L;
+	uint N=ret->N;
+
 	ASSERT(ret->I == INTERVS);
 
 	//
-	float * serie__d = alloc<float>(ret->I*ret->T*ret->L*ret->N);
-	FREAD(serie__d, sizeof(float), ret->I*ret->T*ret->L*ret->N, fp);
-	ret->serie__d = cpu_vers_gpu<float>(serie__d, ret->I*ret->T*ret->L*ret->N);
-	free(serie__d);
+	float * serie = lire        <float>(fp,    I*T*L*N);
+	ret->serie__d = cpu_vers_gpu<float>(serie, I*T*L*N);
+	free(serie);
+
+	//
+	float * prixs = lire        <float>(fp,    T);
+	ret->prixs__d = cpu_vers_gpu<float>(prixs, T);
+	free(prixs);
 
 	//
 	fclose(fp);
@@ -38,4 +47,5 @@ BTCUSDT_t * cree_btcusdt(char * fichier) {
 
 void liberer_btcusdt(BTCUSDT_t * donnee) {
 	cudafree<float>(donnee->serie__d);
+	cudafree<float>(donnee->prixs__d);
 };

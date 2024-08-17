@@ -35,8 +35,8 @@ static __global__ void k__f_df_btcusdt(
 					assert(__y >= -100 && __y <= +100);
 					//
 					float coef = (float)(GRAND_T * MEGA_T * (I*L*N));
-					s       += ( score_p2(__y, __w, 2)) / coef;
-					float ds = (dscore_p2(__y, __w, 2)) / coef;
+					s       += ( score_p2(__y, __w, 2)) / coef * (_y==0 ? 5:1);
+					float ds = (dscore_p2(__y, __w, 2)) / coef * (_y==0 ? 5:1);
 					//
 					//atomicAdd(&dy[ty*I*N*L + i*L*N + _y], ds);
 					dy[ty*I*N*L + i*L*N + _y] = ds;
@@ -61,7 +61,7 @@ float f_df_btcusdt(BTCUSDT_t * btcusdt, float * y__d, float * dy__d, uint * ts__
 		y__d, dy__d,
 		btcusdt->serie__d,
 		ts__d,
-		btcusdt->I, btcusdt->T, btcusdt->L, btcusdt->N
+		I, T, L, N
 	);
 	ATTENDRE_CUDA();
 	//

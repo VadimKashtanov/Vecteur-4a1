@@ -20,20 +20,29 @@ static float lire(float * p__d, uint p) {
 };
 
 static float ** toutes_les_predictions(Mdl_t * mdl, BTCUSDT_t * btcusdt) {
+	//
+	uint I = btcusdt->I;
+	uint T = btcusdt->T;
+	uint L = btcusdt->L;
+	uint N = btcusdt->N;
+	//
+	float ancien_u = 100.0;
 	float u = 100.0;
 	//
 	ASSERT(btcusdt->T % MEGA_T == 0);
 	//
-	uint T     = (btcusdt->T - (btcusdt->T % MEGA_T))/MEGA_T;
-	uint PREDS = T * MEGA_T;
+	uint _T     = (btcusdt->T - (btcusdt->T % MEGA_T))/MEGA_T;
+	uint PREDS = _T * MEGA_T;
 	//
 	float * les_predictions = alloc<float>(PREDS);
 	float * les_deltas      = alloc<float>(PREDS);
+	float * les_prixs       = alloc<float>(PREDS);
 	
 	//
 	uint lp = 0;
 	//
-	FOR(0, _t_, T) {
+	printf("[t=0] u = %f $\n", u);
+	FOR(0, _t_, _T) {
 		//
 		uint ts[GRAND_T];
 		FOR(0, t, GRAND_T) ts[t] = _t_*MEGA_T + 0;
@@ -43,26 +52,39 @@ static float ** toutes_les_predictions(Mdl_t * mdl, BTCUSDT_t * btcusdt) {
 		//
 		mdl_f(mdl, btcusdt, ts__d);
 		//
-		uint Y = mdl->inst[mdl->inst_sortie]->Y;
+		uint Y    = mdl->inst[mdl->sortie]->Y;
 		float * y = gpu_vers_cpu<float>(mdl->inst[mdl->sortie]->y__d, GRAND_T*MEGA_T*Y);
+		//
 		FOR(0, mega_t, MEGA_T) {
 			uint ty = t_MODE(0, mega_t);
-			les_predictions[lp] = y[ty*Y + 0];
-			les_deltas     [lp] = 0;//lire(btcusdt->sorties__d, (ts[0] + mega_t)*btcusdt->Y+0);
-			lp++;
-
-			u += u*1*les_predictions[lp-1]*les_deltas[lp-1];
+			//
+			uint pos = _t_*MEGA_T + mega_t;
+			float p0 = lire(btcusdt->prixs__d, _t_  );
+			float p1 = (_t_ == _T-1 ? p0 : lire(btcusdt->prixs__d, _t_+1));
+			//
+			les_predictions[pos] = y[ty*Y + 0];
+			les_deltas     [pos] = p1/p0 - 1.0;
+			les_prixs      [pos] = p0;
+			//
+			u += u * 10 * les_predictions[pos] * les_deltas[pos];
+			if (u < 0) u = 0;
 		}
 
 		//
 		cudafree<uint>(ts__d);
 		free(y);
-		printf("u = %f $\n", u);
+		printf("[t=%i] u = %f $ ", 1+_t_, u);
+		if      (ancien_u > u) printf("\033[91m-%.2g$\033[0m", abs(ancien_u-u));
+		else if (ancien_u < u) printf("\033[92m+%.2g$\033[0m", abs(ancien_u-u));
+		else                   printf("\033[2m  ?\033[0m");
+		printf("\n");
+		ancien_u = u;
 	};
 	//
-	float ** ret = alloc<float*>(2);
+	float ** ret = alloc<float*>(3);
 	ret[0] = les_predictions;
 	ret[1] = les_deltas     ;
+	ret[2] = les_prixs      ;
 	return ret;
 };
 
@@ -85,19 +107,23 @@ int main() {
 	Mdl_t * mdl = ouvrire_mdl("mdl.bin");
 
 	float ** __lp = toutes_les_predictions(mdl, btcusdt);
-	float * lp = __lp[0];
-	float * dl = __lp[1];
+	float * preds  = __lp[0];
+	float * deltas = __lp[1];
+	float * prixs  = __lp[2];
 
 	FILE * fp = FOPEN("les_predictions.bin", "wb");
 	//
 	uint T     = (btcusdt->T - (btcusdt->T % MEGA_T))/MEGA_T;
 	uint PREDS = T * MEGA_T;
 	//
-	FWRITE(lp, sizeof(float), PREDS, fp);	//les prédictions
-	free(lp);
+	FWRITE(preds, sizeof(float), PREDS, fp);	//les prédictions
+	free(preds);
 	//
-	FWRITE(dl, sizeof(float), PREDS, fp);	//les déltas
-	free(dl);
+	FWRITE(deltas, sizeof(float), PREDS, fp);	//les déltas
+	free(deltas);
+	//
+	FWRITE(prixs, sizeof(float), PREDS, fp);	//les déltas
+	free(prixs);
 	//
 	fclose(fp);
 

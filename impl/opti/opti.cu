@@ -18,6 +18,10 @@ void opti(
 	uint        methode,
 	float         alpha)
 {
+	uint nombre_de_poids = 0;
+	FOR(0, i, mdl->insts) nombre_de_poids += mdl->inst[i]->P;
+
+
 	//	--- Hist ---
 	float *** hist = alloc<float**>(hists[methode]);
 	FOR(0, h, hists[methode]) {
@@ -36,7 +40,7 @@ void opti(
 	//
 	alpha /= _max_abs_grad;
 	//
-	printf("alpha=%f, max_abs_grad=%f => nouveau alpha=%f\n", alpha, _max_abs_grad, alpha / _max_abs_grad);
+	printf("alpha=%f, max_abs_grad=%f => nouveau alpha=%f  (poids=%i)\n", alpha, _max_abs_grad, alpha / _max_abs_grad, nombre_de_poids);
 	//
 	//	--- Opti  ---
 	FOR(0, i, I) {

@@ -125,7 +125,7 @@ int main() {
 		printf(" === Echope %i ===\n", e);
 		
 		//
-		uint I        = 50;
+		uint I        = 90;
 		uint tous_les = 10;
 
 		//
@@ -141,7 +141,7 @@ int main() {
 			ts__d,
 			I,
 			tous_les,
-			ADAM, 5e-4
+			ADAM, 5e-5
 		);
 		ecrire_mdl("mdl.bin", mdl);
 
