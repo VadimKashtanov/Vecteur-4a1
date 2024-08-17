@@ -9,14 +9,16 @@
 #define FWRITE(ptr, taille, nb, fp) (void)!fwrite(ptr, taille, nb, fp);
 #define FOR(d,i,N) for (uint i=d; i < N; i++)
 
-int main() {
+int main(uint argc, char ** argv) {
+	assert(argc == 2);
+	//argv[1];
 	FILE * fp = fopen("prixs/lignes_dar.bin", "rb");
 	//
-	uint P,I,L,N;
-	FREAD(&P, sizeof(uint), 1, fp);
-	FREAD(&I, sizeof(uint), 1, fp);
-	FREAD(&L, sizeof(uint), 1, fp);
-	FREAD(&N, sizeof(uint), 1, fp);
+	uint PRIXS,I,L,N;
+	FREAD(&PRIXS, sizeof(uint), 1, fp);
+	FREAD(&I,     sizeof(uint), 1, fp);
+	FREAD(&L,     sizeof(uint), 1, fp);
+	FREAD(&N,     sizeof(uint), 1, fp);
 	//
 	uint DEPART;
 	FREAD(&DEPART, sizeof(uint), 1, fp);
@@ -24,18 +26,22 @@ int main() {
 	uint INTERV[I];
 	FREAD(INTERV, sizeof(uint), I, fp);
 	//
-	printf("[\033[96mcree_dar_bin.c\033[0m] Charger PRIXS=%i INTERVS=%i LIGNES=%i N=%i\n", P,I,L,N);
+	printf("[\033[96mcree_dar_bin.c\033[0m] Charger PRIXS=%i INTERVS=%i LIGNES=%i N=%i\n", PRIXS,I,L,N);
 	//
 	float * ligne[I][L];
 	FOR(0, i, I) {
 		FOR(0, l, L) {
-			ligne[i][l] = malloc(sizeof(float) * P);
-			FREAD(ligne[i][l], sizeof(float), P, fp);
+			ligne[i][l] = malloc(sizeof(float) * PRIXS);
+			FREAD(ligne[i][l], sizeof(float), PRIXS, fp);
 		};
 	}
+	//
+	float * prixs = malloc(sizeof(float) * (PRIXS-DEPART));
+	FREAD(  prixs, sizeof(float), (PRIXS-DEPART), fp);
+	//
 	fclose(fp);
 	//
-	uint T = P - DEPART - 1;
+	uint T = PRIXS - DEPART;// - 1;
 	//
 	printf("[\033[96mcree_dar_bin.c\033[0m] Data_t DEPART=%i à T=%i\n", DEPART, T);
 	float * dar = malloc(sizeof(float) * I * T * L * N);
@@ -72,12 +78,13 @@ int main() {
 	//
 	printf("[\033[96mcree_dar_bin.c\033[0m] Ecrire I*T*L*N=%i  %f Mo\n", I*T*L*N, (float)(I*T*L*N)*4 / (float)1e6);
 	//
-	fp = fopen("prixs/dar.bin", "wb");
+	fp = fopen(argv[1], "wb");
 	FWRITE(&I, sizeof(uint), 1, fp);
 	FWRITE(&T, sizeof(uint), 1, fp);
 	FWRITE(&L, sizeof(uint), 1, fp);
 	FWRITE(&N, sizeof(uint), 1, fp);
-	FWRITE(dar, sizeof(float), I*T*L*N, fp);
+	FWRITE(  dar, sizeof(float), I*T*L*N, fp);
+	FWRITE(prixs, sizeof(float),       T, fp);
 	fclose(fp);
 	printf("[\033[96mcree_dar_bin.c\033[0m] Ecriture Réussie !\n");
 

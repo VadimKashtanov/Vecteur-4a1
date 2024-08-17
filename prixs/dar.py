@@ -66,6 +66,7 @@ sources     = {
 	nom_extraction  : lire(f'prixs/{marchee}USDT/{nom_extraction}.bin')
 	for nom_extraction in sources_nom
 }
+print([len(v) for k,v in sources.items()])
 assert all(len(v)==PRIXS for k,v in sources.items())
 
 ######################################################################################
@@ -149,7 +150,11 @@ with open("prixs/lignes_dar.bin", "wb") as co:
 	for ligne in lignes:
 		for k,v in ligne.items():
 			bins += st.pack('f'*P, *v)
+	#
+	T = P - DEPART
+	bins += st.pack('f'*T, *sources['prixs'][-T:])
+	#
 	co.write(bins)
 
-system("./prixs/cree_dar_bin")
+system(f"./prixs/cree_dar_bin {fichier_bin}")
 print("## ! Ajouter un BN direct a l'entrée, car les valeurs sont pas normées ! ##")

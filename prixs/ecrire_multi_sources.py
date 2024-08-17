@@ -35,10 +35,10 @@ Année = lambda d: float(d.split(' ')[0].split('-')[1])/12 #quelle période de l
 
 def lire_une_source(source):
 	with open(source, "r") as co:
-		text = co.read().split('\n')
+		text = co.read().replace('\n\n', '\n').split('\n')
 		del text[ 0]
 		del text[ 0]
-		del text[-1]
+		#del text[-1]
 		lignes = [l.split(',') for l in text][::-1] # Du plus recent -> Du plus ancien
 		#
 		NOM    = lignes[0][2]
@@ -67,6 +67,8 @@ if __name__ == "__main__":
 	sources        = [argv[i] for i in range(1, len(argv))]
 
 	sources_lignes = [lire_une_source(source) for source in sources]
+
+	print(f"ecrire_multi_sources.py : len(sources_lignes)=[{[len(i[0]) for i in sources_lignes]}]")
 
 	sorties = {
 		f'prixs/{NOM}/{nom_extraction}.bin' : bruit_pro_normalisant(exctration(lignes))
