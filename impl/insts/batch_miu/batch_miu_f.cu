@@ -15,7 +15,7 @@ static __global__ void kerd_batch_miu(
 	//
 	if (_x < X0 && _t < GRAND_T) {
 		uint tx0 = t_MODE(_t, mega_t-x0_t);
-		uint ty  = t_MODE(_t, mega_t     );
+		//uint ty  = t_MODE(_t, mega_t     );
 		//
 		float s = x0[tx0*X0 + _x];
 		//

@@ -20,12 +20,22 @@ static void kerd__softmax(
 		uint tx0 = t_MODE(_t, mega_t-x0_t);
 		uint ty  = t_MODE(_t, mega_t     );
 		//
+		float max = x0[tx0*X0 + _v*Vect + 0];
+		FOR(1, i, Vect) {
+			float val = x0[tx0*X0 + _v*Vect + i];
+			if (max < val) max = val;
+		};
+		//
 		float somme = 0;
 		FOR(0, i, Vect) {
-			somme += expf(x0[tx0*X0 + _v*Vect + i]);
+			float val = x0[tx0*X0 + _v*Vect + i];
+			assert(val == val);
+			somme += expf(x0[tx0*X0 + _v*Vect + i] - max);
 		}
+		assert(somme == somme);
+		//
 		FOR(0, i, Vect) {
-			float val = expf(x0[tx0*X0 + _v*Vect + i]) / somme;
+			float val = expf(x0[tx0*X0 + _v*Vect + i] - max) / somme;
 			assert(val == val);	//	Softmax
 			y[ty*X0 + _v*Vect + i] = val;
 		}

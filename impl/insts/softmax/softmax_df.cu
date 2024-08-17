@@ -30,19 +30,35 @@ static void d_kerd__softmax(
 			}
 			atomicAdd(&dx0[tx0*X0 + _v*Vect + i], _dx0);
 		}*/
-		float somme = 0;
-		FOR(0, i, Vect) somme += expf(x0[tx0*X0 + _v*Vect + i]);
+		float max = x0[tx0*X0 + _v*Vect + 0];
+		uint max_i = 0;
+		FOR(1, i, Vect) {
+			float val = x0[tx0*X0 + _v*Vect + i];
+			if (max < val) {
+				max = val;
+				max_i = i;
+			}
+		};
 		//
+		float somme = 0;
+		FOR(0, i, Vect) somme += expf(x0[tx0*X0 + _v*Vect + i] - max);
+		//
+		//
+		float d_max   = 0;
 		float d_somme = 0;
 		FOR(0, i, Vect) {
-			//y[ty*X0 + _v*Vect + i] = expf(x0[tx0*X0 + _v*Vect + i]) / somme;
-			d_somme += dy[ty*X0 + _v*Vect + i] * expf(x0[tx0*X0 + _v*Vect + i]) / (somme*somme) * (-1);
-			atomicAdd(&dx0[tx0*X0 + _v*Vect + i], dy[ty*X0 + _v*Vect + i] * expf(x0[tx0*X0 + _v*Vect + i]) / somme);
+			//y[ty*X0 + _v*Vect + i] = expf(x0[tx0*X0 + _v*Vect + i] - max) / somme;
+			d_somme += dy[ty*X0 + _v*Vect + i] * expf(x0[tx0*X0 + _v*Vect + i] - max) / (somme*somme) * (-1);
+			atomicAdd(&dx0[tx0*X0 + _v*Vect + i], dy[ty*X0 + _v*Vect + i] * expf(x0[tx0*X0 + _v*Vect + i]-max) / somme);
+			d_max += dy[ty*X0 + _v*Vect + i] * expf(x0[tx0*X0 + _v*Vect + i] - max) / somme * (-1);
 		}
 		FOR(0, i, Vect) {
-			//somme += expf(x0[tx0*X0 + _v*Vect + i]);
-			atomicAdd(&dx0[tx0*X0 + _v*Vect + i], d_somme * expf(x0[tx0*X0 + _v*Vect + i]));
+			//somme += expf(x0[tx0*X0 + _v*Vect + i] - max);
+			atomicAdd(&dx0[tx0*X0 + _v*Vect + i], d_somme * expf(x0[tx0*X0 + _v*Vect + i] - max));
+			d_max += d_somme * expf(x0[tx0*X0 + _v*Vect + i] - max) * (-1);
 		}
+		//
+		atomicAdd(&dx0[tx0*X0 + _v*Vect + max_i], d_max);
 	};
 };
 

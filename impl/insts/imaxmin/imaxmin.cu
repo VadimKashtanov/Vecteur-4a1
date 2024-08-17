@@ -7,7 +7,7 @@ uint imaxmin__calculer_P(uint X[MAX_XS], uint x[MAX_XS], uint t[MAX_XS], uint Y,
 };
 
 uint imaxmin__calculer_L(uint X[MAX_XS], uint x[MAX_XS], uint t[MAX_XS], uint Y, uint params[MAX_PARAMS]) {
-	uint C0     = params[0];
+	//uint C0     = params[0];
 	return 0;//2 * C0; //max, min
 };
 
