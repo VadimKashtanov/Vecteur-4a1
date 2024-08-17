@@ -20,6 +20,7 @@ typedef struct {
 	uint X; uint Y;
 
 	//	Espaces
+	float * prixs__d;	//	T
 	float * serie__d;	//	I * T * L * N
 } BTCUSDT_t;
 

@@ -2,7 +2,7 @@
 
 #include "mdl.cuh"
 
-#define L2_regularisation 0.01
+#define L2_regularisation 0.001
 
 #define SGD 0
 #define SGD_____HISTOIRE 0

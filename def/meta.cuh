@@ -10,7 +10,7 @@
 
 #define INTERVS 4
 
-#define GRAND_T 8//8//16
+#define GRAND_T 16//16//8//16
 
 #define MEGA_T 1
 
