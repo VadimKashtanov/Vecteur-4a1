@@ -2,6 +2,8 @@
 #cuda-gdb
 #compute-sanitizer --tool memcheck
 rm *.o
+rm main
+rm prog_tester_le_mdl
 #clear
 printf "[\033[93m***\033[0m] \033[103mCompilation ...\033[0m \n"
 
@@ -11,6 +13,7 @@ echo "!!! -G -g !!!";A="-Idef -Idef/insts -diag-suppress 2464 -G -g -O0 -lm -lcu
 
 # les 3 lignes au dessus : debbug cuda, debbug, optimiser
 
+ERREUR_COMPILATION=0
 ################################################################
 
 #	/insts
@@ -161,17 +164,29 @@ nvcc -c impl/opti/opti_adam.cu    ${A} &
 #	Attente de terminaison des differents fils de compilation
 #
 wait
+if [ $? -eq 1 ]
+then
+	exit
+fi
 
 ################################################################
 
 #	Programme : "principale"
 nvcc     -c impl/main.cu ${A}
 nvcc *.o -o      main    ${A}
+if [ $? -eq 1 ]
+then
+	exit
+fi
 rm main.o
 
 #	Programme : "tester le model"
 nvcc     -c impl/prog_tester_le_mdl.cu ${A}
 nvcc *.o -o      prog_tester_le_mdl    ${A}
+if [ $? -eq 1 ]
+then
+	exit
+fi
 rm prog_tester_le_mdl.o
 
 #	Programme : "prog_verif_f_df_insts"
@@ -181,7 +196,6 @@ rm prog_tester_le_mdl.o
 #
 #	Attente de terminaison des differents fils de compilation
 #
-wait
 
 rm *.o
 

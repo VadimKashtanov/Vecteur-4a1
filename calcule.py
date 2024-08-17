@@ -18,8 +18,11 @@ def calcule(donnees, NOM, MEGA_T):
 
 	with open("les_predictions.bin", 'rb') as co:
 		bins = co.read()
-		I = int( int(len(bins)/4) / 2)
+		#
+		I = int( int(len(bins)/4) / 3)
+		#
 		les_predictions = st.unpack('f'*I, bins[0*4*I:1*4*I])
 		les_delats      = st.unpack('f'*I, bins[1*4*I:2*4*I])
+		les_prixs       = st.unpack('f'*I, bins[2*4*I:3*4*I])
 
-	return les_predictions, les_delats
+	return les_predictions, les_delats, les_prixs

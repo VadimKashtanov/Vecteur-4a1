@@ -1,10 +1,10 @@
 #! /usr/bin/python3
 
 N = 32#64#32
-INTERVALLE_MAX = 64
-DEPART = INTERVALLE_MAX * N
 
 INTERVS = 1, 4, 16, 64
+
+DEPART = max(INTERVS) * N
 
 import struct as st
 
